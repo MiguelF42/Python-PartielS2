@@ -29,8 +29,6 @@ def printMenuAutres() :
     print('1. Gestion des utilisateurs')
     print('2. Gestion FTP')
     print('3. Gestion Local')
-    print('4. Scan de ports')
-    print('5. Scan Réseau')
     print('0. Quitter')
     print('')
 
@@ -76,10 +74,20 @@ while choix != '0':
             log('Gestion Local selectionee')
             local.localMenu()
         elif choixM == '4' :
+            if user != 'paris' :
+                print('Cette option est réservée aux utilisateurs de Paris.')
+                choixM = input('Choisissez l\'option : ')
+                continue
             log('Scan de ports selectione')
+
             ports.scanPortMenu()
         elif choixM == '5' :
+            if user != 'paris' :
+                print('Cette option est réservée aux utilisateurs de Paris.')
+                choixM = input('Choisissez l\'option : ')
+                continue
             log('Scan Réseau selectione')
+
             reseau.scanReseauMenu()
         else :
             print('Choix incorrect')
