@@ -37,10 +37,11 @@ def ftpConnexion(ftp_user, ftp_pass) :
 def ftpLs(connexion, cmd, wd):
     print('LS')
     args = parserArgs(cmd)
-    target = args[1] if len(args) > 1 else './'
+    target = args[1] if len(args) > 1 else '.'
     try:
         connexion.dir(target)
     except Exception as e:
+        print(e)
         print('Le répertoire',target,'n\'existe pas')
 
 
@@ -252,12 +253,19 @@ def ftpMv(connexion, cmd, wd):
         else:
             continue
 
-def ftpMenu(connexion=None):
+def ftpMenu(connexion=None, ftp_user='paris', ftp_pass='1234'):
+
+    toprint = 'NONE' if connexion is None else 'CONNECTED'
+
+    print('===================================')
+    print(toprint)
+    print('===================================')
+
     print('')
     print('')
 
-    ftp_user = 'paris' #input('Nom d\'utilisateur : ')
-    ftp_pass = '1234' #input('Mot de passe : ')
+    # ftp_user = 'paris' #input('Nom d\'utilisateur : ')
+    # ftp_pass = '1234' #input('Mot de passe : ')
 
     connexion = connexion if connexion is not None else ftpConnexion(ftp_user, ftp_pass)
     if connexion is None:
@@ -279,6 +287,8 @@ def ftpMenu(connexion=None):
         cmd = input(prompt)
 
         log(f'{ftp_user}@ftp:{wd} > {cmd}')
+
+        print(connexion)
 
         if cmd.startswith('help') :
             print('Liste des commandes disponibles :')
@@ -332,11 +342,10 @@ def ftpMenu(connexion=None):
         
         elif cmd.startswith('exit') :
             print('Déconnexion du serveur FTP.')
+            connexion.close()
             continue
         else :
             print('Commande non reconnue : ', cmd)
-
-    connexion.quit()
 
 if __name__ == "__main__":
     ftpMenu()

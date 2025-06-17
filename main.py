@@ -46,6 +46,7 @@ def menuConnexion():
 choix = menuConnexion()
 
 while choix != '0':
+    connexion = None
     if choix != '1':
         print('Choix incorrect, veuillez réessayer.')
         choix = menuConnexion()
@@ -67,8 +68,9 @@ while choix != '0':
             print('Gestion des utilisateurs')
             log('Gestion des utilisateurs selectionee')
         elif choixM == '2' :
+            connexion = ftp.ftpConnexion(user, pwd)
             log('Gestion FTP selectionee')
-            ftp.ftpMenu(connexion)
+            ftp.ftpMenu(connexion, user, pwd)
 
         elif choixM == '3' :
             log('Gestion Local selectionee')
