@@ -35,7 +35,6 @@ def ftpConnexion(ftp_user, ftp_pass) :
 # Define the FTP commands
 ## ls command
 def ftpLs(connexion, cmd, wd):
-    print('LS')
     args = parserArgs(cmd)
     target = args[1] if len(args) > 1 else '.'
     try:
@@ -47,7 +46,6 @@ def ftpLs(connexion, cmd, wd):
 
 ## cd command
 def ftpCd(connexion, cmd, wd, verbose=True):
-    print('CD')
     args = parserArgs(cmd)
     target = args[1] if len(args) > 1 else wd
     try:
@@ -61,7 +59,6 @@ def ftpCd(connexion, cmd, wd, verbose=True):
 
 ## rename command
 def ftpRn(connexion, cmd, wd):
-    print('RN')
     args = parserArgs(cmd)
     if len(args) < 3 :
         print('Veuillez spécifier un répertoire.')
@@ -76,7 +73,6 @@ def ftpRn(connexion, cmd, wd):
 
 ## rm command
 def ftpRm(connexion, cmd, wd):
-    print('RM')
     args = parserArgs(cmd)
     if len(args) < 2 :
         print('Veuillez spécifier un répertoire.')
@@ -90,7 +86,6 @@ def ftpRm(connexion, cmd, wd):
 
 ## mkdir command
 def ftpMkdir(connexion, cmd, wd):
-    print('MKDIR')
     args = parserArgs(cmd)
     if len(args) < 2 :
         print('Veuillez spécifier un répertoire.')
@@ -104,7 +99,6 @@ def ftpMkdir(connexion, cmd, wd):
 
 ## rmdir command
 def ftpRmdir(connexion, cmd, wd):
-    print('RMDIR')
     args = parserArgs(cmd)
     if len(args) < 2 :
         print('Veuillez spécifier un répertoire.')
@@ -118,7 +112,6 @@ def ftpRmdir(connexion, cmd, wd):
 
 ## get command
 def ftpGet(connexion, cmd, wd):
-    print('GET')
     args = parserArgs(cmd)
     if len(args) < 2 :
         print('Veuillez spécifier un fichier.')
@@ -137,7 +130,6 @@ def ftpGet(connexion, cmd, wd):
 
 ## send command
 def ftpSend(connexion, cmd, wd):
-    print('SEND')
     args = parserArgs(cmd)
     if len(args) < 3 :
         print('Veuillez spécifier un répertoire.')
@@ -172,19 +164,14 @@ def ftpCp(connexion, cmd, wd):
         if line == '':
             continue
         data = remove_items(line.split(' '),'')
-        print(data)
         name = data[8]
         nameLocal = name.split('/')[-1]
 
         if len(lines) == 1 and target != name:
             name = target.split('/')[0]+'/'+name
-            print('One file')
 
         if data[0].startswith('-'):
-            print('NAME : ', name)
-            print('======================GET======================')
             ftpGet(connexion, 'get '+name+' ./temp/', wd)
-            print('======================SEND======================')
             ftpSend(connexion, 'send ./temp/'+nameLocal+' '+new_name, wd)
             os.remove('./temp/'+nameLocal)
         elif data[0].startswith('d'):
@@ -193,7 +180,6 @@ def ftpCp(connexion, cmd, wd):
                 ftpMkdir(connexion,'mkdir '+name,wd)
             if not os.path.exists('./temp/'+name):
                 os.mkdir('./temp/'+name)
-            print('======================DIVE=======================')
             ftpCp(connexion, 'mv ../'+target+'/'+name+' ../'+new_name+'/'+name, wd)
             os.rmdir('./temp/'+name)
             ftpCd(connexion, 'cd ..', wd)
@@ -216,37 +202,29 @@ def ftpMv(connexion, cmd, wd):
     sock.close()
 
     lines = data.split('\r\n')
-    print(data)
 
     for line in lines:
         if line == '':
             continue
         data = remove_items(line.split(' '),'')
-        print(data)
         name = data[8]
         nameLocal = name.split('/')[-1]
 
         if len(lines) == 1 and target != name:
             name = target.split('/')[-1]+'/'+name
-            print('One file')
 
         if data[0].startswith('-'):
             ftpGet(connexion, 'get '+name+' ./temp/', wd)
             ftpSend(connexion, 'send ./temp/'+nameLocal+' '+new_name, wd)
             os.remove('./temp/'+nameLocal)
-            print('NAME : ', name)
-            print('PATH : '+connexion.pwd())
             ftpRm(connexion, 'rm '+target+'/'+name, wd)
-            print()
         elif data[0].startswith('d'):
             ftpCd(connexion, 'cd '+new_name, wd)
             if name not in connexion.nlst():
                 ftpMkdir(connexion,'mkdir '+name,wd)
             if not os.path.exists('./temp/'+name):
                 os.mkdir('./temp/'+name)
-            print('======================DIVE=======================')
             ftpMv(connexion, 'mv ../'+target+'/'+name+' ../'+new_name+'/'+name, wd)
-            print('======================OUT=======================')
             os.rmdir('./temp/'+name)
             ftpCd(connexion, 'cd ..', wd)
             ftpRmdir(connexion, 'mv ../'+target+'/'+name, wd)
@@ -254,12 +232,6 @@ def ftpMv(connexion, cmd, wd):
             continue
 
 def ftpMenu(connexion=None, ftp_user='paris', ftp_pass='1234'):
-
-    toprint = 'NONE' if connexion is None else 'CONNECTED'
-
-    print('===================================')
-    print(toprint)
-    print('===================================')
 
     print('')
     print('')
@@ -287,8 +259,6 @@ def ftpMenu(connexion=None, ftp_user='paris', ftp_pass='1234'):
         cmd = input(prompt)
 
         log(f'{ftp_user}@ftp:{wd} > {cmd}')
-
-        print(connexion)
 
         if cmd.startswith('help') :
             print('Liste des commandes disponibles :')
