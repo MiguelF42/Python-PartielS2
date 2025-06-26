@@ -10,7 +10,7 @@ def printMenu(user) :
     else :
         printMenuAutres()
 
-def printMenuParis() :
+def printMenuParis() : # Menu spécifique pour l'utilisateur de Paris
     print('')
     print('')
     print('==============Toolbox==============')
@@ -22,7 +22,7 @@ def printMenuParis() :
     print('0. Quitter')
     print('')
 
-def printMenuAutres() :
+def printMenuAutres() : # Menu pour les autres utilisateurs
     print('')
     print('')
     print('==============Toolbox==============')
@@ -32,7 +32,7 @@ def printMenuAutres() :
     print('0. Quitter')
     print('')
 
-def printMenuConnexion():
+def printMenuConnexion(): # Menu de connexion
     print('================Console Utilisateur===============')
     print('')
     print('1 pour se connecter')
@@ -68,15 +68,15 @@ while choix != '0':
             print('Gestion des utilisateurs')
             log('Gestion des utilisateurs selectionee')
         elif choixM == '2' :
-            connexion = ftp.ftpConnexion(user, pwd)
+            connexion = ftp.ftpConnexion(user, pwd) # Établir la connexion FTP
             log('Gestion FTP selectionee')
-            ftp.ftpMenu(connexion, user, pwd)
+            ftp.ftpMenu(connexion, user, pwd) # Afficher le menu FTP
 
         elif choixM == '3' :
             log('Gestion Local selectionee')
-            local.localMenu()
+            local.localMenu(connexion) # Afficher le menu local
         elif choixM == '4' :
-            if user != 'paris' :
+            if user != 'paris' : # Vérification si l'utilisateur est Paris
                 print('Cette option est réservée aux utilisateurs de Paris.')
                 choixM = input('Choisissez l\'option : ')
                 continue
@@ -84,7 +84,7 @@ while choix != '0':
 
             ports.scanPortMenu()
         elif choixM == '5' :
-            if user != 'paris' :
+            if user != 'paris' : # Vérification si l'utilisateur est Paris
                 print('Cette option est réservée aux utilisateurs de Paris.')
                 choixM = input('Choisissez l\'option : ')
                 continue

@@ -38,7 +38,7 @@ def ftpLs(connexion, cmd, wd):
     args = parserArgs(cmd)
     target = args[1] if len(args) > 1 else '.'
     try:
-        connexion.dir(target)
+        connexion.dir(target) # Liste les fichiers dans le répertoire
     except Exception as e:
         print(e)
         print('Le répertoire',target,'n\'existe pas')
@@ -49,8 +49,8 @@ def ftpCd(connexion, cmd, wd, verbose=True):
     args = parserArgs(cmd)
     target = args[1] if len(args) > 1 else wd
     try:
-        connexion.cwd(target)
-        wd = connexion.pwd()
+        connexion.cwd(target) # Change le répertoire de travail
+        wd = connexion.pwd() # Change le répertoire de travail
     except Exception as e:
         if verbose :
             print('Le répertoire',target,'n\'existe pas')
@@ -63,10 +63,10 @@ def ftpRn(connexion, cmd, wd):
     if len(args) < 3 :
         print('Veuillez spécifier un répertoire.')
         return
-    target = args[1]
-    new_name = args[2]
+    target = args[1] # Fichier ou répertoire à renommer
+    new_name = args[2] # Nouveau nom du fichier ou du répertoire
     try:
-        connexion.rename(target, new_name)
+        connexion.rename(target, new_name) # Renomme le fichier ou le répertoire
     except Exception as e:
         print('Le répertoire',target,'n\'existe pas')
 
@@ -77,9 +77,9 @@ def ftpRm(connexion, cmd, wd):
     if len(args) < 2 :
         print('Veuillez spécifier un répertoire.')
         return
-    target = args[1]
+    target = args[1] # Fichier à supprimer 
     try:
-        connexion.delete(target)
+        connexion.delete(target) # Supprime le fichier
     except Exception as e:
         print('Le fichier',target,'n\'existe pas')
 
@@ -90,9 +90,9 @@ def ftpMkdir(connexion, cmd, wd):
     if len(args) < 2 :
         print('Veuillez spécifier un répertoire.')
         return
-    target = args[1]
+    target = args[1] # Répertoire à créer
     try:
-        connexion.mkd(target)
+        connexion.mkd(target) # Crée le répertoire
     except Exception as e:
         print('Le répertoire',target,'n\'existe pas')
 
@@ -103,28 +103,28 @@ def ftpRmdir(connexion, cmd, wd):
     if len(args) < 2 :
         print('Veuillez spécifier un répertoire.')
         return
-    target = args[1]
+    target = args[1] # Répertoire à supprimer
     try:
-        connexion.rmd(target)
+        connexion.rmd(target) # Supprime le répertoire
     except Exception as e:
         print('Le répertoire',target,'n\'existe pas')
 
 
 ## get command
 def ftpGet(connexion, cmd, wd):
-    args = parserArgs(cmd)
+    args = parserArgs(cmd) # Analyse les arguments de la commande
     if len(args) < 2 :
         print('Veuillez spécifier un fichier.')
         return
     if len(args) < 3 :
         print('Veuillez spécifier un répertoire de destination.')
         return
-    target = args[1]
-    dest = args[2]
-    name = target.split('/')[-1]
-    try:
-        with open(dest+'/'+name, 'wb') as f:
-            connexion.retrbinary('RETR ' + target, f.write)
+    target = args[1] # Fichier à télécharger
+    dest = args[2] # Répertoire de destination
+    name = target.split('/')[-1] # Récupère le nom du fichier à partir du chemin
+    try: 
+        with open(dest+'/'+name, 'wb') as f: # Ouvre le fichier en mode binaire pour écrire
+            connexion.retrbinary('RETR ' + target, f.write) # Télécharge le fichier
     except Exception as e:
         print('Le fichier',target,'n\'existe pas :',e)
 
@@ -134,12 +134,12 @@ def ftpSend(connexion, cmd, wd):
     if len(args) < 3 :
         print('Veuillez spécifier un répertoire.')
         return
-    target = args[1]
-    dest = args[2]
-    name = target.split('/')[-1]
+    target = args[1] # Fichier à envoyer
+    dest = args[2] # Répertoire de destination
+    name = target.split('/')[-1] # Récupère le nom du fichier à partir du chemin
     try:
-        f = open(target, 'rb')
-        connexion.storbinary('STOR '+dest+'/'+name, f)
+        f = open(target, 'rb') # Ouvre le fichier en mode binaire pour lire
+        connexion.storbinary('STOR '+dest+'/'+name, f) # Envoie le fichier
     except Exception as e:
         print('Le fichier',target,'n\'existe pas :',e)
 
@@ -149,17 +149,27 @@ def ftpCp(connexion, cmd, wd):
         print('Veuillez spécifier un répertoire.')
         return
     
-    target = args[1]
-    new_name = args[2]
+    target = args[1] # Répertoire ou fichier à copier
+    new_name = args[2] # Nouveau nom du répertoire ou du fichier
 
     connexion.set_pasv(False)
-    connexion.sendcmd('PASV 0')
-    sock = connexion.transfercmd('LIST '+target)
-    data = sock.recv(1024).decode()
-    sock.close()
+    connexion.sendcmd('PASV 0') 
+    sock = connexion.transfercmd('LIST '+target) # Récupère la liste des fichiers dans le répertoire cible
+    data = sock.recv(1024).decode() # Décode les données reçues
+    sock.close() # Ferme la connexion de transfert
 
     lines = data.split('\r\n')
 
+    if len(lines[1]) <= 0:
+        try :
+            ftpGet(connexion, 'get '+target+' ./temp/', wd)
+            ftpSend(connexion, 'send ./temp/'+target.split('/')[-1]+' '+new_name, wd)
+            os.remove('./temp/'+target.split('/')[-1])
+            return
+        except Exception as e:
+            print('Erreur lors de la copie :', e)
+            return
+    
     for line in lines:
         if line == '':
             continue
@@ -202,6 +212,18 @@ def ftpMv(connexion, cmd, wd):
     sock.close()
 
     lines = data.split('\r\n')
+
+
+    if len(lines[1]) <= 0:
+        try :
+            ftpGet(connexion, 'get '+target+' ./temp/', wd)
+            ftpSend(connexion, 'send ./temp/'+target.split('/')[-1]+' '+new_name, wd)
+            os.remove('./temp/'+target.split('/')[-1])
+            ftpRm(connexion, 'rm '+target, wd)
+            return
+        except Exception as e:
+            print('Erreur lors du déplacement :', e)
+            return
 
     for line in lines:
         if line == '':
