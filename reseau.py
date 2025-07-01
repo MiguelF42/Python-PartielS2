@@ -16,7 +16,7 @@ def print_menu():
 def getIpByHostname(hostname):
     """Get the IP address for a given hostname."""
     try:
-        ip_address = socket.gethostbyname(hostname)
+        ip_address = socket.gethostbyname(hostname) # Résolution du nom d'hôte en adresse IP
         return ip_address
     except socket.gaierror:
         return None
@@ -24,22 +24,22 @@ def getIpByHostname(hostname):
 def getHostnameByIp(ip_address):
     """Get the hostname for a given IP address."""
     try:
-        hostname = socket.gethostbyaddr(ip_address)
+        hostname = socket.gethostbyaddr(ip_address) # Résolution de l'adresse IP en nom d'hôte
         return hostname
     except socket.herror:
         return None
     
 def pingHost(ip):
 
-    command = ["ping", "-c", "1", ip] if os.sys.platform.lower() != "win32" else ["ping", "-n", "1", ip]
+    command = ["ping", "-c", "1", ip] if os.sys.platform.lower() != "win32" else ["ping", "-n", "1", ip] # Commande pour pinger l'hôte, -c pour Unix/Linux et -n pour Windows
 
-    if subprocess.call(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL) == 0:
+    if subprocess.call(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL) == 0: # Exécution de la commande ping, redirection de la sortie standard et d'erreur vers /dev/null
         print(ip + " est joignable")
     else:
         print(ip + " n'est pas joignable")
 
 
-def binarymask(subnet_mask):
+def binarymask(subnet_mask): # Convertit le masque de sous-réseau en binaire
     c = subnet_mask
     mask = []
     for i in range(32) :
@@ -51,34 +51,34 @@ def binarymask(subnet_mask):
     return mask
 
 def int_to_bin(x):
-    if x < 0 or x > 255:
+    if x < 0 or x > 255: # Vérifie que l'entier est dans la plage 0-255
         raise ValueError("Input must be in the range 0-255")
-    if x == 0: return [0, 0, 0, 0, 0, 0, 0, 0]
+    if x == 0: return [0, 0, 0, 0, 0, 0, 0, 0] # Si l'entier est 0, retourne une liste de 8 zéros
     bit = []
     while x:
-        bit.append(x % 2)
-        x >>= 1
+        bit.append(x % 2) # Ajoute le reste de la division par 2 à la liste
+        x >>= 1 # Décale l'entier de 1 bit vers la droite
     bit += [0] * (8 - len(bit))  # Pad to 8 bits
-    return bit[::-1]
+    return bit[::-1] 
 
 def bin_to_int(binary):
     if len(binary) != 8:
-        raise ValueError("Input must be a list of 8 bits")
+        raise ValueError("Input must be a list of 8 bits") # Vérifie que la liste binaire a 8 bits
     value=0
-    for i in range(8):
-        if binary[i] == 1:
-            value += 2 ** (7 - i)
+    for i in range(8):  # Parcourt les 8 bits de la liste binaire
+        if binary[i] == 1: # Si le bit est 1, on ajoute la valeur correspondante
+            value += 2 ** (7 - i) # Calcule la valeur entière à partir de la représentation binaire
     return value
 
 def pingNetwork(cidr):
-    ipv4_pattern = "(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/([1-2][0-9]|3[0-1])"
+    ipv4_pattern = "(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/([1-2][0-9]|3[0-1])" # Regex pour vérifier le format CIDR d'une adresse IPv4
 
-    if not re.match(ipv4_pattern, cidr):
+    if not re.match(ipv4_pattern, cidr): # Vérifie si le CIDR est au format IPv4
         print("Le réseau n'est pas au format CIDR")
         return
     network = cidr.split('/')
     base_ip = network[0]
-    binary_mask = binarymask(int(network[1]))
+    binary_mask = binarymask(int(network[1])) # Convertit le masque de sous-réseau en binaire
 
     octets = base_ip.split('.')
     binary_ip = []
@@ -86,10 +86,10 @@ def pingNetwork(cidr):
     c = 0
 
     for octet in octets:
-        binary_octet = int_to_bin(int(octet))
+        binary_octet = int_to_bin(int(octet)) # Convertit chaque octet de l'adresse IP en binaire
         for i in range(8):
             if binary_mask[c] == 1:
-                binary_ip.append(binary_octet[i])
+                binary_ip.append(binary_octet[i]) 
                 binary_broadcast.append(binary_octet[i])
             else:
                 binary_ip += [0] * (32 - len(binary_ip))
@@ -124,10 +124,10 @@ def pingNetwork(cidr):
 
     threads = []
 
-    for i in range(incrementeur[0] + 1):
-        for j in range(incrementeur[1] + 1):
-            for k in range(incrementeur[2] + 1):
-                for l in range(incrementeur[3] + 1):
+    for i in range(incrementeur[0] + 1): # Boucle pour le premier octet de l'adresse IP
+        for j in range(incrementeur[1] + 1): # Boucle pour le deuxième octet de l'adresse IP
+            for k in range(incrementeur[2] + 1): # Boucle pour le troisième octet de l'adresse IP
+                for l in range(incrementeur[3] + 1): # Boucle pour le quatrième octet de l'adresse IP
                     ip = f"{ipNet[0] + i}.{ipNet[1] + j}.{ipNet[2] + k}.{ipNet[3] + l}"
                     t = threading.Thread(target=pingHost, args=(ip,))
                     if len(threads) < 255 :

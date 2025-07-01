@@ -160,17 +160,17 @@ def ftpCp(connexion, cmd, wd):
 
     lines = data.split('\r\n')
 
-    if len(lines[1]) <= 0:
+    if len(lines[1]) <= 0 and lines[0].startswith('-'): # Si la cible est un fichier unique
         try :
-            ftpGet(connexion, 'get '+target+' ./temp/', wd)
-            ftpSend(connexion, 'send ./temp/'+target.split('/')[-1]+' '+new_name, wd)
-            os.remove('./temp/'+target.split('/')[-1])
+            ftpGet(connexion, 'get '+target+' ./temp/', wd) # Télécharge le fichier dans un répertoire temporaire
+            ftpSend(connexion, 'send ./temp/'+target.split('/')[-1]+' '+new_name, wd) # Envoie le fichier vers le nouveau nom
+            os.remove('./temp/'+target.split('/')[-1]) # Supprime le fichier temporaire
             return
         except Exception as e:
             print('Erreur lors de la copie :', e)
             return
     
-    for line in lines:
+    for line in lines: # Parcourt chaque ligne de la liste des fichiers
         if line == '':
             continue
         data = remove_items(line.split(' '),'')
@@ -181,16 +181,16 @@ def ftpCp(connexion, cmd, wd):
             name = target.split('/')[0]+'/'+name
 
         if data[0].startswith('-'):
-            ftpGet(connexion, 'get '+name+' ./temp/', wd)
-            ftpSend(connexion, 'send ./temp/'+nameLocal+' '+new_name, wd)
-            os.remove('./temp/'+nameLocal)
-        elif data[0].startswith('d'):
+            ftpGet(connexion, 'get '+name+' ./temp/', wd) # Télécharge le fichier dans un répertoire temporaire
+            ftpSend(connexion, 'send ./temp/'+nameLocal+' '+new_name, wd) # Envoie le fichier vers le nouveau nom
+            os.remove('./temp/'+nameLocal) # Supprime le fichier temporaire
+        elif data[0].startswith('d'): # Si c'est un répertoire
             ftpCd(connexion, 'cd '+new_name, wd)
             if name not in connexion.nlst():
                 ftpMkdir(connexion,'mkdir '+name,wd)
-            if not os.path.exists('./temp/'+name):
+            if not os.path.exists('./temp/'+name): # Si le répertoire temporaire n'existe pas, le crée
                 os.mkdir('./temp/'+name)
-            ftpCp(connexion, 'mv ../'+target+'/'+name+' ../'+new_name+'/'+name, wd)
+            ftpCp(connexion, 'mv ../'+target+'/'+name+' ../'+new_name+'/'+name, wd) # Copie le répertoire dans le répertoire temporaire
             os.rmdir('./temp/'+name)
             ftpCd(connexion, 'cd ..', wd)
         else:
@@ -214,33 +214,33 @@ def ftpMv(connexion, cmd, wd):
     lines = data.split('\r\n')
 
 
-    if len(lines[1]) <= 0:
+    if len(lines[1]) <= 0 and lines[0].startswith('-'): # Si la cible est un fichier unique
         try :
-            ftpGet(connexion, 'get '+target+' ./temp/', wd)
-            ftpSend(connexion, 'send ./temp/'+target.split('/')[-1]+' '+new_name, wd)
-            os.remove('./temp/'+target.split('/')[-1])
-            ftpRm(connexion, 'rm '+target, wd)
+            ftpGet(connexion, 'get '+target+' ./temp/', wd) # Télécharge le fichier dans un répertoire temporaire
+            ftpSend(connexion, 'send ./temp/'+target.split('/')[-1]+' '+new_name, wd) # Envoie le fichier vers le nouveau nom
+            os.remove('./temp/'+target.split('/')[-1]) # Supprime le fichier temporaire
+            ftpRm(connexion, 'rm '+target, wd) # Supprime le fichier original
             return
         except Exception as e:
             print('Erreur lors du déplacement :', e)
             return
 
-    for line in lines:
+    for line in lines: # Parcourt chaque ligne de la liste des fichiers
         if line == '':
             continue
-        data = remove_items(line.split(' '),'')
+        data = remove_items(line.split(' '),'') 
         name = data[8]
         nameLocal = name.split('/')[-1]
 
-        if len(lines) == 1 and target != name:
+        if len(lines) == 1 and target != name: 
             name = target.split('/')[-1]+'/'+name
 
-        if data[0].startswith('-'):
+        if data[0].startswith('-'): # si c'est un fichier
             ftpGet(connexion, 'get '+name+' ./temp/', wd)
             ftpSend(connexion, 'send ./temp/'+nameLocal+' '+new_name, wd)
             os.remove('./temp/'+nameLocal)
             ftpRm(connexion, 'rm '+target+'/'+name, wd)
-        elif data[0].startswith('d'):
+        elif data[0].startswith('d'): # si c'est un répertoire
             ftpCd(connexion, 'cd '+new_name, wd)
             if name not in connexion.nlst():
                 ftpMkdir(connexion,'mkdir '+name,wd)

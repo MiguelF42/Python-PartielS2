@@ -50,6 +50,12 @@ def localRmdir(cmd, wd): # Supprimer un répertoire local
     if len(args) < 2: # Vérifie si un répertoire a été spécifié
         print('Veuillez spécifier un répertoire.')
         return
+
+    y=input('Êtes-vous sûr de vouloir supprimer le répertoire ? (y/n) ')
+    if y.lower() != 'y':
+        print('Suppression annulée.')
+        return
+
     target = args[1]
     dir_to_remove = os.path.join(wd, target) if not os.path.isabs(target) else target # Chemin absolu ou relatif
     try:
@@ -121,10 +127,25 @@ def localRm(cmd, wd): # Supprimer un fichier local
     if len(args) < 2: # Vérifie si un fichier a été spécifié
         print('Veuillez spécifier un fichier.')
         return
+    
+    y=input('Êtes-vous sûr de vouloir supprimer le répertoire ? (y/n) ')
+    if y.lower() != 'y':
+        print('Suppression annulée.')
+        return
+    
+    force = False
+
+    if len(args) == 3:
+        if args[2] == '-f':
+            force = True
+        else:
+            print('Option inconnue :', args[2])
+            return
+        target = args[2]
     target = args[1]
     file_to_remove = os.path.join(wd, target) if not os.path.isabs(target) else target # Chemin absolu ou relatif du fichier à supprimer
     try:
-        os.remove(file_to_remove)
+        shutil.rmtree(file_to_remove) if force else os.remove(file_to_remove) 
         print('Fichier supprimé :', file_to_remove)
     except Exception as e:
         print('Erreur lors de la suppression du fichier :', e)

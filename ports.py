@@ -155,35 +155,34 @@ def scan_port(port,ip, protocol,f):
     finally:
         connexion_principale.close()
 
+def scan_range_ports(start_port, end_port, ip, protocol,f):
+    # Fonction pour scanner une plage de ports
+    for port in range(start_port, end_port + 1):
+        scan_port(port, ip, protocol,f) # Appel de la fonction de scan de port pour chaque port dans la plage
+    
+
 # Fonction pour scanner une plage de ports
-def scan_range_ports(start_port,end_port, ip, protocol,f):
+def scan_range_ports_threads(start_port,end_port, ip, protocol,f):
     threads = [] # Liste pour stocker les threads
 
+    nb_ports = end_port - start_port + 1 # Nombre de ports à scanner
+    print(f'Nombre de ports à scanner : {nb_ports}')
+
+    nb_threads = nb_ports // 256 if nb_ports % 256 == 0 else (nb_ports // 256) + 1 # Nombre de threads à créer
+
+
+    start_thread_port = start_port
     # Création d'un thread pour chaque port dans la plage
-    for port in range(start_port, end_port + 1):
+    while start_thread_port <= end_port:
+        end_thread_port = start_thread_port + 255 # Port de fin pour le thread
 
-        # Création d'un thread pour le scan de port
-        t = threading.Thread(target=scan_port, args=(port, ip, protocol,f))
-
-        # Vérification du nombre de threads actifs
-        if len(threads) < 65536 :
-
-            # Si le nombre de threads est inférieur à 65536, on ajoute le thread à la liste
-            threads.append(t)
-
-        else:
-
-            # Si le nombre de threads est supérieur à 65536, on attend que le premier thread se termine
-            threads[0].join()
-
-            # On supprime le premier thread de la liste
-            del threads[0]
-
-            # On ajoute le nouveau thread à la liste
-            threads.append(t)
-        
+        print("Scan du port ", start_thread_port , "au port ", end_thread_port)
+        t = threading.Thread(target=scan_range_ports, args=(start_thread_port, end_thread_port, ip, protocol,f))
+    
         # Démarrage du thread
+        threads.append(t) # Ajout du thread à la liste
         t.start()
+        start_thread_port = end_thread_port + 1 # Mise à jour du port de début pour le prochain thread
 
     for t in threads:
         # Attendre que tous les threads se terminent
@@ -255,7 +254,7 @@ def scanPortMenu() :
             start = time.time()
     
             # Appel de la fonction de scan de plage de ports ici
-            scan_range_ports(int(port_range[0]), int(port_range[1]), ip, protocol,f)
+            scan_range_ports_threads(int(port_range[0]), int(port_range[1]), ip, protocol,f)
     
             # Arrêt du chronomètre
             end = time.time()
@@ -275,7 +274,7 @@ def scanPortMenu() :
             start = time.time()
     
             # Appel de la fonction de scan de plage de ports avec comme paramètres 1 & 65535 pour scanner tous les ports.
-            scan_range_ports(1, 65535, ip, protocol,f)
+            scan_range_ports_threads(1, 65535, ip, protocol,f)
     
             # Arrêt du chronomètre
             end = time.time()
