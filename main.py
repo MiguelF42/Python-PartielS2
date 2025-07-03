@@ -2,7 +2,12 @@ import ports
 import ftp
 import local
 import reseau
+from apscheduler.schedulers.background import BackgroundScheduler
 from tools import log
+from dotenv import load_dotenv
+import os 
+
+load_dotenv()  # Charger les variables d'environnement depuis le fichier .env
 
 def printMenu(user) :
     if user == 'paris' :
@@ -43,7 +48,23 @@ def menuConnexion():
     choix = input('Choisissez l\'option : ')
     return choix
 
+def scheduledJob():
+    ftpsession = ftp.ftpConnexion(os.getenv('FTP_LOG_USER'), os.getenv('FTP_LOG_PASSWORD'))
+    if not ftpsession :
+        print('Impossible de se connecter au serveur FTP pour le job planifié.')
+        return
+    log('Job planifié exécuté : sauvegarde des logs')
+    print('Job planifié exécuté : sauvegarde des logs')
+    ftp.ftpBackupLogs(ftpsession)
+    ftpsession.quit()  # Fermer la session FTP après la sauvegarde
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(scheduledJob, 'interval', minutes=5)  # Exécute le job toutes les 30 minutes
+scheduler.start()
+
 choix = menuConnexion()
+
 
 while choix != '0':
     connexion = None

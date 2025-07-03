@@ -141,7 +141,7 @@ def ftpSend(connexion, cmd, wd):
         f = open(target, 'rb') # Ouvre le fichier en mode binaire pour lire
         connexion.storbinary('STOR '+dest+'/'+name, f) # Envoie le fichier
     except Exception as e:
-        print('Le fichier',target,'n\'existe pas :',e)
+        print('Une erreur s\'est produite :',e)
 
 def ftpCp(connexion, cmd, wd):
     args = parserArgs(cmd)
@@ -252,6 +252,15 @@ def ftpMv(connexion, cmd, wd):
             ftpRmdir(connexion, 'mv ../'+target+'/'+name, wd)
         else:
             continue
+
+def ftpBackupLogs(connexion):
+    items = os.listdir('./logs')
+    if not items:
+        print('Aucun fichier de log à sauvegarder.')
+        return
+    for item in items:
+        if item.endswith('.log'):
+            ftpSend(connexion, 'send ./logs/'+item+' /', '')
 
 def ftpMenu(connexion=None, ftp_user='paris', ftp_pass='1234'):
 

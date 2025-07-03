@@ -38,6 +38,10 @@ def pingHost(ip):
     else:
         print(ip + " n'est pas joignable")
 
+def pingMultipleHosts(hosts):
+    for host in hosts:
+        pingHost(host) # Pinger chaque hôte dans la liste
+
 
 def binarymask(subnet_mask): # Convertit le masque de sous-réseau en binaire
     c = subnet_mask
@@ -123,26 +127,21 @@ def pingNetwork(cidr):
     print(f"Adresse de broadcast : {ipBroadcast[0]}.{ipBroadcast[1]}.{ipBroadcast[2]}.{ipBroadcast[3]}")
 
     threads = []
+    hosts = []
 
     for i in range(incrementeur[0] + 1): # Boucle pour le premier octet de l'adresse IP
         for j in range(incrementeur[1] + 1): # Boucle pour le deuxième octet de l'adresse IP
             for k in range(incrementeur[2] + 1): # Boucle pour le troisième octet de l'adresse IP
                 for l in range(incrementeur[3] + 1): # Boucle pour le quatrième octet de l'adresse IP
-                    ip = f"{ipNet[0] + i}.{ipNet[1] + j}.{ipNet[2] + k}.{ipNet[3] + l}"
-                    t = threading.Thread(target=pingHost, args=(ip,))
-                    if len(threads) < 255 :
-                        # Si le nombre de threads est inférieur à 65536, on ajoute le thread à la liste
+                    hosts.append(f"{ipNet[0] + i}.{ipNet[1] + j}.{ipNet[2] + k}.{ipNet[3] + l}")
+                    if len(hosts) == 16:
+                        # Créer un thread pour pinger les hôtes
+                        t = threading.Thread(target=pingMultipleHosts, args=(hosts,))
                         threads.append(t)
+                        t.start()
+                        hosts = []
 
-                    else:
-                        # Si le nombre de threads est supérieur à 65536, on attend que le premier thread se termine
-                        threads[0].join()
-                        # On supprime le premier thread de la liste
-                        del threads[0]
-                        # On ajoute le nouveau thread à la liste
-                        threads.append(t)
-                    # Démarrage du thread
-                    t.start()
+                
 
     for t in threads:
         # Attendre que tous les threads se terminent

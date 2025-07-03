@@ -168,15 +168,12 @@ def scan_range_ports_threads(start_port,end_port, ip, protocol,f):
     nb_ports = end_port - start_port + 1 # Nombre de ports à scanner
     print(f'Nombre de ports à scanner : {nb_ports}')
 
-    nb_threads = nb_ports // 256 if nb_ports % 256 == 0 else (nb_ports // 256) + 1 # Nombre de threads à créer
-
 
     start_thread_port = start_port
     # Création d'un thread pour chaque port dans la plage
     while start_thread_port <= end_port:
-        end_thread_port = start_thread_port + 255 # Port de fin pour le thread
+        end_thread_port = start_thread_port + 31  # Port de fin pour le thread
 
-        print("Scan du port ", start_thread_port , "au port ", end_thread_port)
         t = threading.Thread(target=scan_range_ports, args=(start_thread_port, end_thread_port, ip, protocol,f))
     
         # Démarrage du thread

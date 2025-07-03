@@ -9,6 +9,7 @@ def localLs(cmd, wd): # Lister le contenu d'un répertoire local
     target = args[1] if len(args) > 1 else wd
     try:
         print('\n'.join(os.listdir(target)))
+        return os.listdir(target)
     except Exception as e:
         print('Le répertoire',target,'n\'existe pas : ')
 
@@ -121,6 +122,21 @@ def localCp(cmd, wd): # Copier un fichier local
     except Exception as e:
         print('Erreur lors de la copie du fichier :', e)
 
+def localTouch(cmd, wd):
+    args = parserArgs(cmd)
+    if len(args) < 2: # Vérifie si un nom de fichier a été spécifié
+        print('Veuillez spécifier un nom de fichier.')
+        return
+    
+    target = args[1]
+    file_to_touch = os.path.join(wd, target) if not os.path.isabs(target) else target # Chemin absolu ou relatif du fichier à créer
+    try:
+        with open(file_to_touch, 'a'):
+            os.utime(file_to_touch, None) # Met à jour la date de modification du fichier
+        print('Fichier créé ou mis à jour :', file_to_touch)
+    except Exception as e:
+        print('Erreur lors de la création ou de la mise à jour du fichier :', e)
+    
 
 def localRm(cmd, wd): # Supprimer un fichier local
     args = parserArgs(cmd)
@@ -211,6 +227,7 @@ def localMenu(connexion): # Afficher le menu local
             print('mv [fichier] [nouveau nom] - Déplacer un fichier')
             print('mkdir [répertoire] - Créer un répertoire')
             print('rmdir [répertoire] - Supprimer un répertoire')
+            print('touch [fichier] - Créer ou mettre à jour un fichier')
             print('rm [fichier] - Supprimer un fichier')
             print('get [fichier distant] - Télécharger un fichier (non implémenté)')
             print('send [fichier local] - Envoyer un fichier (non implémenté)')
@@ -239,6 +256,9 @@ def localMenu(connexion): # Afficher le menu local
 
         elif cmd.startswith('rmdir') :
             localRmdir(cmd, wd)
+
+        elif cmd.startswith('touch') :
+            localTouch(cmd, wd)
 
         elif cmd.startswith('rm') :
             localRm(cmd, wd)
